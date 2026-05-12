@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - UMMA ACTIVE</title>
+    <link rel="stylesheet" href="css/admin-style.css">
+</head>
+<body>
+    <div class="login-screen" id="loginScreen">
+        <div class="login-box">
+            <h2>🔐 Panel Admin</h2>
+            <input type="password" id="adminPassword" placeholder="Contraseña">
+            <button onclick="login()">Entrar</button>
+            <p id="loginError" style="color: red; display: none;">Contraseña incorrecta</p>
+        </div>
+    </div>
+
+    <div class="admin-panel" id="adminPanel" style="display: none;">
+        <header>
+            <h1>📦 Panel de Administración</h1>
+            <button onclick="logout()" class="logout-btn">Salir</button>
+        </header>
+
+        <main>
+            <!-- Formulario para agregar/editar producto -->
+            <section class="product-form">
+                <h2 id="formTitle">➕ Agregar Nuevo Producto</h2>
+                <form id="productForm">
+                    <input type="hidden" id="productId">
+                    
+                    <div class="form-group">
+                        <label>Nombre del Producto:</label>
+                        <input type="text" id="productName" required placeholder="Ej: Calza Sport Negra">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Categoría:</label>
+                        <select id="productCategory" required>
+                            <option value="">Seleccionar categoría</option>
+                            <option value="calzas">Calzas Deportivas</option>
+                            <option value="corpiño">Corpiño Deportivo</option>
+                            <option value="top">Top Deportivo</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precio:</label>
+                        <input type="number" id="productPrice" required placeholder="8500" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Precio Original (opcional):</label>
+                        <input type="number" id="productOriginalPrice" placeholder="10500" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>URL de la Imagen:</label>
+                        <input type="url" id="productImage" required placeholder="https://ejemplo.com/imagen.jpg">
+                        <small>Pega el enlace de la imagen</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Etiqueta (opcional):</label>
+                        <input type="text" id="productLabel" placeholder="Nuevo, Más vendido, etc.">
+                    </div>
+
+                    <div class="form-buttons">
+                        <button type="submit" class="btn-primary">💾 Guardar Producto</button>
+                        <button type="button" onclick="cancelEdit()" class="btn-secondary" id="cancelBtn" style="display: none;">❌ Cancelar</button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Lista de productos existentes -->
+            <section class="product-list">
+                <h2>📋 Productos Existentes</h2>
+                <div id="productsContainer"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/admin.js"></script>
+</body>
+</html>

@@ -1,5 +1,8 @@
-// Datos de Productos
-const productos = [
+// Cargar productos desde localStorage (gestionados por panel admin)
+let productos = [];
+
+// Productos por defecto si no hay nada en localStorage
+const DEFAULT_PRODUCTS = [
     {
         id: 1,
         nombre: "Calza Sport Negra",
@@ -82,6 +85,17 @@ const productos = [
         etiqueta: "Nuevo"
     }
 ];
+
+// Cargar productos desde localStorage
+function loadProductsFromStorage() {
+    const stored = localStorage.getItem('umma_products');
+    if (stored) {
+        productos = JSON.parse(stored);
+    } else {
+        productos = [...DEFAULT_PRODUCTS];
+        localStorage.setItem('umma_products', JSON.stringify(productos));
+    }
+}
 
 // Estado del carrito
 let carrito = [];
@@ -355,5 +369,6 @@ function alternarMenuMovil() {
 
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
+    loadProductsFromStorage();
     renderizarProductos();
 });
