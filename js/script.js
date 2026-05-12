@@ -263,6 +263,12 @@ async function enviarPedido(evento) {
     const direccion = document.getElementById('customerAddress').value;
     const notas = document.getElementById('customerNotes').value;
 
+    // Validación básica
+    if (!nombre || !telefono || !direccion) {
+        mostrarNotificacion('Por favor completa todos los campos requeridos.');
+        return;
+    }
+
     const total = carrito.reduce((suma, item) => suma + (item.precio * item.cantidad), 0);
     const listaArticulos = carrito.map(item =>
         `• ${item.nombre} x${item.cantidad} - $${(item.precio * item.cantidad).toLocaleString()}`
@@ -292,8 +298,17 @@ async function enviarPedido(evento) {
     const formData = new FormData(evento.target);
     formData.append('order_details', detallesPedido);
     formData.append('total_amount', total.toString());
+    formData.append('_subject', `Nuevo Pedido UMMA ACTIVE - ${nombre}`);
+
+    // Mostrar loading
+    const submitBtn = document.getElementById('confirmBtn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Enviando...';
+    submitBtn.disabled = true;
 
     try {
+        console.log('Enviando pedido a Formspree.io...');
+        
         const response = await fetch('https://formspree.io/f/xojrrvgq', {
             method: 'POST',
             body: formData,
@@ -302,7 +317,12 @@ async function enviarPedido(evento) {
             }
         });
 
+        console.log('Respuesta del servidor:', response);
+
         if (response.ok) {
+            const result = await response.json();
+            console.log('Pedido enviado exitosamente:', result);
+            
             // Mostrar éxito
             document.getElementById('checkoutForm').classList.add('hidden');
             document.getElementById('successView').classList.remove('hidden');
@@ -312,13 +332,19 @@ async function enviarPedido(evento) {
             actualizarUI();
 
             // Mostrar notificación
-            mostrarNotificacion('¡Pedido enviado con éxito!');
+            mostrarNotificacion('¡Pedido enviado con éxito! Revisa tu email.');
         } else {
-            throw new Error('Error al enviar el pedido');
+            const errorText = await response.text();
+            console.error('Error del servidor:', errorText);
+            throw new Error(`Error ${response.status}: ${errorText}`);
         }
     } catch (error) {
-        console.error('Error:', error);
-        mostrarNotificacion('Error al enviar el pedido. Intenta nuevamente.');
+        console.error('Error completo:', error);
+        mostrarNotificacion('Error al enviar el pedido. Verifica tu conexión e intenta nuevamente.');
+    } finally {
+        // Restaurar botón
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
     }
 }
 
