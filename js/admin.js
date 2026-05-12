@@ -211,7 +211,7 @@ async function saveProduct() {
     const fileInput = document.getElementById('productImageFile');
     const file = fileInput.files[0];
     
-    // Validar que se haya subido una imagen
+    // Validar que se haya subido una imagen solo para productos nuevos
     if (!file && !editingProductId) {
         showMessage('Por favor sube una imagen del producto', 'error');
         return;
@@ -228,7 +228,7 @@ async function saveProduct() {
             return;
         }
     } else if (editingProductId) {
-        // Si estamos editando, mantener la imagen existente
+        // Si estamos editando y no hay nueva imagen, mantener la imagen existente
         const existingProduct = productos.find(p => p.id === editingProductId);
         imageUrl = existingProduct.imagen;
     }
@@ -289,6 +289,9 @@ function editProduct(id) {
     
     // Limpiar input de archivo para evitar confusión
     document.getElementById('productImageFile').value = '';
+    
+    // Actualizar texto de ayuda para edición
+    document.getElementById('imageHelp').textContent = 'Opcional: Sube una nueva imagen para reemplazar la actual';
 
     // Cambiar título y mostrar botón cancelar
     document.getElementById('formTitle').textContent = '✏️ Editar Producto';
@@ -319,6 +322,7 @@ function resetForm() {
     document.getElementById('formTitle').textContent = '➕ Agregar Nuevo Producto';
     document.getElementById('cancelBtn').style.display = 'none';
     document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('imageHelp').textContent = 'Sube una imagen desde tu computadora';
     editingProductId = null;
 }
 
