@@ -290,7 +290,7 @@ function enviarPedido(evento) {
         `================================\n\n` +
         `Fecha: ${new Date().toLocaleString('es-AR')}`;
 
-    // Set order details in hidden field
+    // Set order details in hidden field (ahora usa fi-text-message)
     document.getElementById('orderDetails').value = detallesPedido;
 
     // Getform es mucho más simple - solo enviamos el formulario

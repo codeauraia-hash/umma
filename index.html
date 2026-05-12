@@ -186,18 +186,18 @@
                 <form id="checkoutForm" action="https://getform.io/f/30knbbi2w3z" method="POST" onsubmit="enviarPedido(event)">
                     <div class="form-group">
                         <label>Nombre Completo</label>
-                        <input type="text" id="customerName" name="name" required placeholder="Tu nombre completo">
+                        <input type="text" id="customerName" name="fi-sender-fullName" required placeholder="Tu nombre completo">
                     </div>
                     <div class="form-group">
                         <label>Teléfono / WhatsApp</label>
-                        <input type="tel" id="customerPhone" name="phone" required placeholder="+54 2901 464567">
+                        <input type="tel" id="customerPhone" name="fi-text-phone" required placeholder="+54 2901 464567">
                     </div>
                     <div class="form-group">
                         <label>Notas (opcional)</label>
-                        <textarea id="customerNotes" name="notes" placeholder="Talle, color preferido, etc."></textarea>
+                        <textarea id="customerNotes" name="fi-text-notes" placeholder="Talle, color preferido, etc."></textarea>
                     </div>
                     <!-- Hidden field for order details -->
-                    <input type="hidden" id="orderDetails" name="order_details">
+                    <input type="hidden" id="orderDetails" name="fi-text-message">
                     <button type="submit" class="confirm-btn" id="confirmBtn">
                         Confirmar Pedido
                     </button>
