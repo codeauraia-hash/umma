@@ -260,12 +260,11 @@ function enviarPedido(evento) {
 
     const nombre = document.getElementById('customerName').value;
     const telefono = document.getElementById('customerPhone').value;
-    const direccion = document.getElementById('customerAddress').value;
     const notas = document.getElementById('customerNotes').value;
 
-    // Validación básica
-    if (!nombre || !telefono || !direccion) {
-        mostrarNotificación('Por favor completa todos los campos requeridos.');
+    // Validación básica (sin dirección)
+    if (!nombre || !telefono) {
+        mostrarNotificación('Por favor completa nombre y teléfono.');
         return;
     }
 
@@ -281,7 +280,6 @@ function enviarPedido(evento) {
         `DATOS DEL CLIENTE:\n` +
         `Nombre: ${nombre}\n` +
         `WhatsApp: ${telefono}\n` +
-        `Dirección: ${direccion}\n` +
         `${notas ? `Notas: ${notas}\n` : ''}\n` +
         `Nro. WhatsApp de contacto (tienda): ${whatsappTienda}\n\n` +
         `================================\n` +
