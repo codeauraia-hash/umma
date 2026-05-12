@@ -255,7 +255,7 @@ function renderizarResumen() {
     `;
 }
 
-async function enviarPedido(evento) {
+function enviarPedido(evento) {
     evento.preventDefault();
 
     const nombre = document.getElementById('customerName').value;
@@ -265,7 +265,7 @@ async function enviarPedido(evento) {
 
     // Validación básica
     if (!nombre || !telefono || !direccion) {
-        mostrarNotificacion('Por favor completa todos los campos requeridos.');
+        mostrarNotificación('Por favor completa todos los campos requeridos.');
         return;
     }
 
@@ -295,57 +295,30 @@ async function enviarPedido(evento) {
     // Set order details in hidden field
     document.getElementById('orderDetails').value = detallesPedido;
 
-    const formData = new FormData(evento.target);
-    formData.append('order_details', detallesPedido);
-    formData.append('total_amount', total.toString());
-    formData.append('_subject', `Nuevo Pedido UMMA ACTIVE - ${nombre}`);
-
-    // Mostrar loading
+    // Getform es mucho más simple - solo enviamos el formulario
     const submitBtn = document.getElementById('confirmBtn');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = 'Enviando...';
     submitBtn.disabled = true;
 
-    try {
-        console.log('Enviando pedido a Formspree.io...');
+    // Enviar formulario con Getform
+    evento.target.submit();
+
+    // Mostrar éxito después de un momento
+    setTimeout(() => {
+        document.getElementById('checkoutForm').classList.add('hidden');
+        document.getElementById('successView').classList.remove('hidden');
         
-        const response = await fetch('https://formspree.io/f/xojrrvgq', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-        console.log('Respuesta del servidor:', response);
-
-        if (response.ok) {
-            const result = await response.json();
-            console.log('Pedido enviado exitosamente:', result);
-            
-            // Mostrar éxito
-            document.getElementById('checkoutForm').classList.add('hidden');
-            document.getElementById('successView').classList.remove('hidden');
-
-            // Vaciar carrito
-            carrito = [];
-            actualizarUI();
-
-            // Mostrar notificación
-            mostrarNotificacion('¡Pedido enviado con éxito! Revisa tu email.');
-        } else {
-            const errorText = await response.text();
-            console.error('Error del servidor:', errorText);
-            throw new Error(`Error ${response.status}: ${errorText}`);
-        }
-    } catch (error) {
-        console.error('Error completo:', error);
-        mostrarNotificacion('Error al enviar el pedido. Verifica tu conexión e intenta nuevamente.');
-    } finally {
+        // Vaciar carrito
+        carrito = [];
+        actualizarUI();
+        
+        mostrarNotificación('¡Pedido enviado con éxito!');
+        
         // Restaurar botón
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
-    }
+    }, 1000);
 }
 
 // Notificación
