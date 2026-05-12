@@ -105,11 +105,17 @@ function renderizarProductos(filtro = 'all') {
     const grid = document.getElementById('productsGrid');
     const filtrados = filtro === 'all' ? productos : productos.filter(p => p.categoria === filtro);
 
-    grid.innerHTML = filtrados.map(producto => `
-        <div class="product-card" data-category="${producto.categoria}">
+    grid.innerHTML = filtrados.map(producto => {
+        const stock = producto.stock || 0;
+        const stockClass = stock === 0 ? 'out-of-stock' : stock < 5 ? 'low-stock' : 'in-stock';
+        const stockText = stock === 0 ? 'Agotado' : `Stock: ${stock}`;
+        
+        return `
+        <div class="product-card ${stockClass}" data-category="${producto.categoria}">
             <div class="product-image-wrap">
                 <img src="${producto.imagen}" alt="${producto.nombre}" loading="lazy">
                 ${producto.etiqueta ? `<span class="product-badge">${producto.etiqueta}</span>` : ''}
+                ${stock === 0 ? '<span class="out-of-stock-badge">Agotado</span>' : ''}
             </div>
             <div class="product-info">
                 <div class="product-category">${obtenerEtiquetaCategoria(producto.categoria)}</div>
@@ -118,22 +124,46 @@ function renderizarProductos(filtro = 'all') {
                     $${producto.precio.toLocaleString()}
                     ${producto.precioOriginal ? `<span class="original">$${producto.precioOriginal.toLocaleString()}</span>` : ''}
                 </div>
-                <button class="add-to-cart-btn" id="btnAgregar${producto.id}" onclick="agregarAlCarrito(${producto.id})">
+                <div class="stock-info ${stockClass}">${stockText}</div>
+                <button class="add-to-cart-btn ${stock === 0 ? 'disabled' : ''}" id="btnAgregar${producto.id}" onclick="agregarAlCarrito(${producto.id})" ${stock === 0 ? 'disabled' : ''}>
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
-                    Agregar al Carrito
+                    ${stock === 0 ? 'Agotado' : 'Agregar al Carrito'}
                 </button>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function obtenerEtiquetaCategoria(cat) {
+    const stored = localStorage.getItem('umma_categories');
+    if (stored) {
+        const categories = JSON.parse(stored);
+        const category = categories.find(c => c.id === cat);
+        return category ? category.name : cat;
+    }
+    
+    // Fallback a categorías por defecto
     const etiquetas = {
         'calzas': 'Calza Deportiva',
         'corpiño': 'Corpiño Deportivo',
         'top': 'Top Deportivo'
     };
     return etiquetas[cat] || cat;
+}
+
+function obtenerCategorias() {
+    const stored = localStorage.getItem('umma_categories');
+    if (stored) {
+        return JSON.parse(stored);
+    }
+    
+    // Fallback a categorías por defecto
+    return [
+        { id: 'calzas', name: 'Calza Deportiva' },
+        { id: 'corpiño', name: 'Corpiño Deportivo' },
+        { id: 'top', name: 'Top Deportivo' }
+    ];
 }
 
 function filtrarProductos(categoria, boton) {
@@ -367,8 +397,22 @@ function alternarMenuMovil() {
     }
 }
 
+// Renderizar categorías dinámicamente
+function renderizarCategorias() {
+    const categories = obtenerCategorias();
+    const container = document.getElementById('categoryTabs');
+    
+    if (container) {
+        container.innerHTML = `
+            <button class="category-tab active" onclick="filtrarProductos('all', this)">Todos</button>
+            ${categories.map(cat => `<button class="category-tab" onclick="filtrarProductos('${cat.id}', this)">${cat.name}</button>`).join('')}
+        `;
+    }
+}
+
 // Inicializar
 document.addEventListener('DOMContentLoaded', function() {
     loadProductsFromStorage();
+    renderizarCategorias();
     renderizarProductos();
 });

@@ -91,11 +91,19 @@ const DEFAULT_PRODUCTS = [
 // Variables globales
 let productos = [];
 let editingProductId = null;
+let categories = [
+    { id: 'calzas', name: 'Calzas Deportivas' },
+    { id: 'corpiño', name: 'Corpiño Deportivo' },
+    { id: 'top', name: 'Top Deportivo' }
+];
+let uploadedImages = {}; // Almacenar imágenes subidas
 
 // Inicializar cuando carga la página
 document.addEventListener('DOMContentLoaded', function() {
     loadProducts();
+    loadCategories();
     setupForm();
+    setupImageUpload();
 });
 
 // Funciones de Login
@@ -132,10 +140,56 @@ function loadProducts() {
     if (stored) {
         productos = JSON.parse(stored);
     } else {
-        productos = [...DEFAULT_PRODUCTS];
+        productos = [...DEFAULT_PRODUCTS.map(p => ({...p, stock: 10}))]; // Agregar stock por defecto
         saveProducts();
     }
     renderProducts();
+}
+
+// Cargar categorías desde localStorage
+function loadCategories() {
+    const stored = localStorage.getItem('umma_categories');
+    if (stored) {
+        categories = JSON.parse(stored);
+    } else {
+        localStorage.setItem('umma_categories', JSON.stringify(categories));
+    }
+    renderCategories();
+    updateCategorySelect();
+}
+
+// Guardar categorías en localStorage
+function saveCategories() {
+    localStorage.setItem('umma_categories', JSON.stringify(categories));
+}
+
+// Configurar subida de imágenes
+function setupImageUpload() {
+    const fileInput = document.getElementById('productImageFile');
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    
+    fileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+// Convertir imagen a base64
+function imageToBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
 }
 
 // Guardar productos en localStorage
@@ -153,14 +207,40 @@ function setupForm() {
 }
 
 // Guardar producto (nuevo o editado)
-function saveProduct() {
+async function saveProduct() {
+    const fileInput = document.getElementById('productImageFile');
+    const file = fileInput.files[0];
+    
+    // Validar que se haya subido una imagen
+    if (!file && !editingProductId) {
+        showMessage('Por favor sube una imagen del producto', 'error');
+        return;
+    }
+
+    let imageUrl = '';
+    
+    // Si hay una nueva imagen, convertirla a base64
+    if (file) {
+        try {
+            imageUrl = await imageToBase64(file);
+        } catch (error) {
+            showMessage('Error al procesar la imagen', 'error');
+            return;
+        }
+    } else if (editingProductId) {
+        // Si estamos editando, mantener la imagen existente
+        const existingProduct = productos.find(p => p.id === editingProductId);
+        imageUrl = existingProduct.imagen;
+    }
+
     const productData = {
         nombre: document.getElementById('productName').value,
         categoria: document.getElementById('productCategory').value,
         precio: parseInt(document.getElementById('productPrice').value),
         precioOriginal: document.getElementById('productOriginalPrice').value ? 
                         parseInt(document.getElementById('productOriginalPrice').value) : null,
-        imagen: document.getElementById('productImage').value,
+        stock: parseInt(document.getElementById('productStock').value),
+        imagen: imageUrl,
         etiqueta: document.getElementById('productLabel').value || null
     };
 
@@ -198,8 +278,17 @@ function editProduct(id) {
     document.getElementById('productCategory').value = product.categoria;
     document.getElementById('productPrice').value = product.precio;
     document.getElementById('productOriginalPrice').value = product.precioOriginal || '';
-    document.getElementById('productImage').value = product.imagen;
+    document.getElementById('productStock').value = product.stock || 10;
     document.getElementById('productLabel').value = product.etiqueta || '';
+
+    // Mostrar imagen existente
+    const preview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    previewImg.src = product.imagen;
+    preview.style.display = 'block';
+    
+    // Limpiar input de archivo para evitar confusión
+    document.getElementById('productImageFile').value = '';
 
     // Cambiar título y mostrar botón cancelar
     document.getElementById('formTitle').textContent = '✏️ Editar Producto';
@@ -229,6 +318,7 @@ function resetForm() {
     document.getElementById('productForm').reset();
     document.getElementById('formTitle').textContent = '➕ Agregar Nuevo Producto';
     document.getElementById('cancelBtn').style.display = 'none';
+    document.getElementById('imagePreview').style.display = 'none';
     editingProductId = null;
 }
 
@@ -249,6 +339,7 @@ function renderProducts() {
                     <strong>Categoría:</strong> ${getCategoryName(product.categoria)}<br>
                     <strong>Precio:</strong> $${product.precio.toLocaleString()}
                     ${product.precioOriginal ? `<br><strong>Original:</strong> $${product.precioOriginal.toLocaleString()}` : ''}
+                    <br><strong>Stock:</strong> ${product.stock || 0} unidades
                     ${product.etiqueta ? `<br><strong>Etiqueta:</strong> ${product.etiqueta}` : ''}
                 </div>
             </div>
@@ -291,4 +382,97 @@ function showMessage(message, type) {
     setTimeout(() => {
         messageDiv.remove();
     }, 3000);
+}
+
+// Funciones de Gestión de Categorías
+function addCategory() {
+    const categoryName = document.getElementById('newCategoryName').value.trim();
+    
+    if (!categoryName) {
+        showMessage('Por favor ingresa un nombre para la categoría', 'error');
+        return;
+    }
+    
+    // Verificar si ya existe
+    if (categories.some(cat => cat.name.toLowerCase() === categoryName.toLowerCase())) {
+        showMessage('Esta categoría ya existe', 'error');
+        return;
+    }
+    
+    // Crear ID a partir del nombre
+    const categoryId = categoryName.toLowerCase()
+        .replace(/[^a-z0-9]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+    
+    const newCategory = {
+        id: categoryId,
+        name: categoryName
+    };
+    
+    categories.push(newCategory);
+    saveCategories();
+    renderCategories();
+    updateCategorySelect();
+    
+    // Limpiar input
+    document.getElementById('newCategoryName').value = '';
+    
+    showMessage('Categoría agregada con éxito', 'success');
+}
+
+function editCategory(id) {
+    const category = categories.find(cat => cat.id === id);
+    if (!category) return;
+    
+    const newName = prompt('Editar nombre de la categoría:', category.name);
+    if (newName && newName.trim() && newName.trim() !== category.name) {
+        category.name = newName.trim();
+        saveCategories();
+        renderCategories();
+        updateCategorySelect();
+        showMessage('Categoría actualizada con éxito', 'success');
+    }
+}
+
+function deleteCategory(id) {
+    // Verificar si hay productos usando esta categoría
+    const productsInCategory = productos.filter(p => p.categoria === id);
+    if (productsInCategory.length > 0) {
+        showMessage(`No se puede eliminar la categoría. Hay ${productsInCategory.length} productos usándola.`, 'error');
+        return;
+    }
+    
+    if (confirm('¿Estás seguro de que quieres eliminar esta categoría?')) {
+        categories = categories.filter(cat => cat.id !== id);
+        saveCategories();
+        renderCategories();
+        updateCategorySelect();
+        showMessage('Categoría eliminada con éxito', 'success');
+    }
+}
+
+function renderCategories() {
+    const container = document.getElementById('categoriesContainer');
+    
+    if (categories.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #666;">No hay categorías agregadas</p>';
+        return;
+    }
+    
+    container.innerHTML = categories.map(category => `
+        <div class="category-item">
+            <span class="category-name">${category.name}</span>
+            <div class="category-actions">
+                <button class="btn-edit" onclick="editCategory('${category.id}')">✏️</button>
+                <button class="btn-delete" onclick="deleteCategory('${category.id}')">🗑️</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateCategorySelect() {
+    const select = document.getElementById('productCategory');
+    select.innerHTML = '<option value="">Seleccionar categoría</option>' + 
+        categories.map(cat => `<option value="${cat.id}">${cat.name}</option>`).join('');
 }

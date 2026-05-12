@@ -55,9 +55,18 @@
                     </div>
 
                     <div class="form-group">
-                        <label>URL de la Imagen:</label>
-                        <input type="url" id="productImage" required placeholder="https://ejemplo.com/imagen.jpg">
-                        <small>Pega el enlace de la imagen</small>
+                        <label>Stock:</label>
+                        <input type="number" id="productStock" required placeholder="10" min="0">
+                        <small>Cantidad disponible en stock</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Imagen del Producto:</label>
+                        <input type="file" id="productImageFile" accept="image/*" required>
+                        <small>Sube una imagen desde tu computadora</small>
+                        <div id="imagePreview" style="margin-top: 10px; display: none;">
+                            <img id="previewImg" style="max-width: 200px; max-height: 150px; border: 1px solid #ddd; border-radius: 5px;">
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -70,6 +79,22 @@
                         <button type="button" onclick="cancelEdit()" class="btn-secondary" id="cancelBtn" style="display: none;">❌ Cancelar</button>
                     </div>
                 </form>
+            </section>
+
+            <!-- Gestión de Categorías -->
+            <section class="category-management">
+                <h2>🏷️ Gestión de Categorías</h2>
+                <div class="category-form">
+                    <div class="form-group">
+                        <label>Nueva Categoría:</label>
+                        <input type="text" id="newCategoryName" placeholder="Ej: Leggings">
+                    </div>
+                    <button onclick="addCategory()" class="btn-primary">➕ Agregar Categoría</button>
+                </div>
+                <div class="category-list">
+                    <h3>Categorías Existentes:</h3>
+                    <div id="categoriesContainer"></div>
+                </div>
             </section>
 
             <!-- Lista de productos existentes -->

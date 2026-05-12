@@ -191,6 +191,70 @@ body {
     background: #7f8c8d;
 }
 
+/* Gestión de Categorías */
+.category-management {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.category-management h2 {
+    margin-bottom: 1.5rem;
+    color: #8B5CF6;
+    font-size: 1.3rem;
+}
+
+.category-form {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.category-form .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.category-form button {
+    white-space: nowrap;
+}
+
+.category-list h3 {
+    margin-bottom: 1rem;
+    color: #555;
+    font-size: 1.1rem;
+}
+
+.category-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+}
+
+.category-item:hover {
+    border-color: #8B5CF6;
+    background: #f8f9fa;
+}
+
+.category-name {
+    font-weight: bold;
+    color: #333;
+}
+
+.category-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
 /* Lista de Productos */
 .product-list {
     background: white;
